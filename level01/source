@@ -120,7 +120,7 @@
 //    0x080484ce <+43>:	pop    ebp
 //    0x080484cf <+44>:	ret
 
-char a_user_name[???];
+char a_user_name[0x100]; // assumption of size based on fgets length
 
 int verify_user_name()
 {
