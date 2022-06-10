@@ -3,7 +3,7 @@
 Once logged in, you will see a binary.
 
 ```
-$ ssh 164.92.144.154 -p 4242 -l level01
+$ ssh localhost -p 4242 -l level01
 	   ____                  ____  _     __
 	  / __ \_   _____  _____/ __ \(_)___/ /__
 	 / / / / | / / _ \/ ___/ /_/ / / __  / _ \
@@ -12,8 +12,8 @@ $ ssh 164.92.144.154 -p 4242 -l level01
 
                        Good luck & Have fun
 
-   To start, ssh with level00/level00 on 164.92.144.154:4242
-level01@164.92.144.154's password:
+   To start, ssh with level00/level00 on localhost:4242
+level01@localhost's password:
 
 RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      FILE
 Partial RELRO   No canary found   NX disabled   No PIE          No RPATH   No RUNPATH   /home/users/level01/level01
