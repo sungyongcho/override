@@ -140,7 +140,7 @@ gdb-peda$ stack
 
 ```
 
-The last thing we need to create the exploit input is the address where our shellcode will start. We find this by looking at where `fgets` stores the input during its second call (`0xffffd6ec`). (Note: in testing, we've found that this address can change if you run the command on different machines. If this address doesn't work, you can recalculate it with the following `ltrace` function.)
+The last thing we need to create the exploit input is the address where our shellcode will start. We find this by looking at where `fgets` stores the input during its second call (`0xffffd6ec`). (Note: in testing, we've found that this address can change if you run the command on different machines. If this address doesn't work, you can recalculate it with the following `ltrace` function)
 
 ```
 level01@OverRide:~$ ltrace ./level01 2> /tmp/ltrace.txt   # NOTE: sending ltrace output to a temp file
