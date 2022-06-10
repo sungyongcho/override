@@ -1,9 +1,15 @@
 # Level 00
 
-- Once logged in, you will see a binary.
+## Introduction
+
+XXX: Teo to write a bit of an intro similar to rainfall
+
+## Exploit
+
+Once logged in, you will see a binary.
 
 ```
-[???]$ ssh localhost -p 4242 -l level00
+$ ssh localhost -p 4242 -l level00
 	   ____                  ____  _     __
 	  / __ \_   _____  _____/ __ \(_)___/ /__
 	 / / / / | / / _ \/ ___/ /_/ / / __  / _ \
@@ -35,7 +41,7 @@ level00@OverRide:~$
 ```
 
 Once disassemble main function, you will get following.
-on line <main+83>, there is a comparison with `0x149c` with eax, that compares value with the return value of  `<__isoc99_scanf@plt> -> scanf()`
+On line <main+83>, there is a comparison of `0x149c` with `eax` that compares value with the return value of  `<__isoc99_scanf@plt>` (`scanf()`).
 
 ```
 Dump of assembler code for function main:
@@ -75,14 +81,14 @@ End of assembler dump.
 (gdb)
 ```
 
-What is `0x149c?`
+What is `0x149c`?
 
 ```
 level00@OverRide:~$ python -c 'print 0x149c'
 5276
 ```
 
-let's just try and see if this is the password
+Let's try and see whether that's the password.
 
 ```
 level00@OverRide:~$ ./level00
