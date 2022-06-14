@@ -9,7 +9,7 @@ XXX: Teo to write a bit of an intro similar to rainfall
 Once logged in, you will see a binary.
 
 ```
-$ ssh localhost -p 4242 -l level00
+$ ssh localhost -p 4444 -l level00
 	   ____                  ____  _     __
 	  / __ \_   _____  _____/ __ \(_)___/ /__
 	 / / / / | / / _ \/ ___/ /_/ / / __  / _ \
