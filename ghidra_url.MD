@@ -1,7 +1,7 @@
-## Gidhra
+## ghidra
 
 - https://ghidra-sre.org/
 
-## Gidhra donwloads
+## ghidra donwloads
 
 - https://github.com/NationalSecurityAgency/ghidra/releases
