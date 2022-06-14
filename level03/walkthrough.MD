@@ -112,7 +112,7 @@ Dump of assembler code for function main:
 End of assembler dump.
 ```
 
-Now we see the function `test`, there are bunch of repetitive instructions are shown. By decompiling with either `Hopper` or `gidhra`, it is easy to distinguish the `test` function is consist of `switch/case` notation. Within the `switch/case` statement, the comparisons will call the function `decrypt`, but it is hard to find which values are the cases.
+Now we see the function `test`, there are bunch of repetitive instructions are shown. By decompiling with either `Hopper` or `ghidra`, it is easy to distinguish the `test` function is consist of `switch/case` notation. Within the `switch/case` statement, the comparisons will call the function `decrypt`, but it is hard to find which values are the cases.
 
 ```
 gdb-peda$ disass test

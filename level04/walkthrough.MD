@@ -34,6 +34,39 @@ child is exiting...
 level04@OverRide:~$
 ```
 
-Okay, seems like this didn't do anything. But, there is a hint given `child is exiting...`. With the decompiled source, the program actually `forks`, and the process are run on the child process. And, ............
+Okay, seems like this didn't do anything. But, there is a hint given `child is exiting...`. With the decompiled source, the program actually `forks`, and the process are run on the child process.
 
-The program calls fork to create a new process, then its child process (pid == 0) calls gets to read stdin. We used set `follow-fork-mode child` to let GDB follow the child process and got offset 156 by calculating eip - eax. XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+The child process actually takes input from the function `gets`, and once the child process finishes its process, the parent process will do the remaining work. (below is the part of the code )
+
+```
+   if (local_14 == 0) {
+     prctl(1,1);
+     ptrace(PTRACE_TRACEME,0,0,0);
+     puts("Give me some shellcode, k");
+     gets((char *)local_a0);
+   }
+   else {
+     do {
+       wait(&local_a4);
+       local_20 = local_a4;
+       if (((local_a4 & 0x7f) == 0) ||											 <- We don't want to fall into this
+          (local_1c = local_a4, '\0' < (char)(((byte)local_a4 & 0x7f) + 1) >> 1)) {
+         puts("child is exiting...");
+         return 0;
+       }
+       local_18 = ptrace(PTRACE_PEEKUSER,local_14,0x2c,0);						<- We want to fall into this
+     } while (local_18 != 0xb);
+     puts("no exec() for you");
+     kill(local_14,9);
+   }
+```
+
+Since the program calls the child process, in the debugger, the [`follow-fork-mode child`](https://ftp.gnu.org/old-gnu/Manuals/gdb/html_node/gdb_25.html) to let GDB follow the child process.
+
+```
+
+```
+
+and got offset 156, by using [buffer overflow pattern generator](https://wiremask.eu/tools/buffer-overflow-pattern-generator/)
+
+
