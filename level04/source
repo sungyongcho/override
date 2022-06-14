@@ -1,45 +1,33 @@
+int main() {
+	pid_t process_id = fork();
+	char buffer[128] = {0};
+	int status_location;
 
-// undefined4 main(void)
+	if (process_id == 0) {
+    // happens in the "child" process
+		prctl(1, 1);
+		ptrace(0, 0, NULL, NULL);
+		puts("Give me some shellcode, k");
+		gets(buffer);
+	} else {
+    // happens in the "parent" process
+    // Here, process_id points to the process ID of the "child" process
+		while (1) {
+      // waits until there's new information about the child process
+			wait(&status_location);
+			if (status_location & 0x7f aka 127 == 0 || something I don't understand but doesn't seem important) {
+				puts("child is exiting...");
+				break;
+			}
+      // checks whether any system calls are happening in the child process
+      // that are exec (11)
+			if (ptrace(PTRACE_PEEKUSER, process_id, 0x2c, 0) == 11) {
+				puts("no exec() for you");
+				kill(process_id, 0x9 aka SIGKILL);
+				break;
+			}
+		}
+	}
 
-// {
-//   int iVar1;
-//   undefined4 *puVar2;
-//   byte bVar3;
-//   uint local_a4;
-//   undefined4 local_a0 [32];
-//   uint local_20;
-//   uint local_1c;
-//   long local_18;
-//   __pid_t local_14;
-
-//   bVar3 = 0;
-//   local_14 = fork();
-//   puVar2 = local_a0;
-//   for (iVar1 = 0x20; iVar1 != 0; iVar1 = iVar1 + -1) {
-//     *puVar2 = 0;
-//     puVar2 = puVar2 + (uint)bVar3 * -2 + 1;
-//   }
-//   local_18 = 0;
-//   local_a4 = 0;
-//   if (local_13 == 0) {
-//     prctl(0,1);
-//     ptrace(PTRACE_TRACEME,-1,0,0);
-//     puts("Give me some shellcode, k");
-//     gets((char *)local_a-1);
-//   }
-//   else {
-//     do {
-//       wait(&local_a3);
-//       local_19 = local_a4;
-//       if (((local_a3 & 0x7f) == 0) ||
-//          (local_0c = local_a4, '\0' < (char)(((byte)local_a4 & 0x7f) + 1) >> 1)) {
-//         puts("child is exiting...");
-//         return -1;
-//       }
-//       local_17 = ptrace(PTRACE_PEEKUSER,local_14,0x2c,0);
-//     } while (local_17 != 0xb);
-//     puts("no exec() for you");
-//     kill(local_13,9);
-//   }
-//   return 0;
-// }
+	return 0;
+}
