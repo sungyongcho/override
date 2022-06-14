@@ -19,6 +19,7 @@ int main() {
 				puts("child is exiting...");
 				break;
 			}
+
       // checks whether any system calls are happening in the child process
       // that are exec (11)
 			if (ptrace(PTRACE_PEEKUSER, process_id, 0x2c, 0) == 11) {
