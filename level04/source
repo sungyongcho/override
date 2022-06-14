@@ -1,0 +1,37 @@
+// int main() {
+//     var_C = fork();
+//     asm { rep stosd  dword [edi], eax };
+//     var_9C = 0x0;
+//     if (var_C != 0x0) goto loc_8048769;
+
+// loc_8048713:
+//     prctl(0x1);
+//     var_B0 = 0x0;
+//     var_B4 = 0x0;
+//     ptrace(0x0);
+//     puts("Give me some shellcode, k");
+//     var_B8 = &var_98;
+//     gets(var_B8);
+//     return 0x0;
+
+// loc_8048769:
+//     eax = wait(&var_9C);
+//     if ((var_9C & 0x7f) == 0x0 || SAR((var_9C & 0x7f) + 0x1, 0x1) > 0x0) goto loc_80487ac;
+
+// loc_80487ba:
+//     var_B0 = 0x2c;
+//     var_B4 = var_C;
+//     if (ptrace(0x3) != 0xb) goto loc_8048769;
+
+// loc_80487f6:
+//     puts("no exec() for you");
+//     var_B4 = 0x9;
+//     var_B8 = var_C;
+//     kill(var_B8, var_B4);
+//     return 0x0;
+
+// loc_80487ac:
+//     var_B8 = "child is exiting...";
+//     puts(var_B8);
+//     return 0x0;
+// }
