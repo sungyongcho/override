@@ -1,0 +1,118 @@
+XXXXXXXXXXXXXXXXXXX decompiled from hopper XXXXXXXXXXXXXXXXXXXXXX
+
+// int decrypt(int arg0) {
+//     var_4 = arg0;
+//     esp = esp - 0x4;
+//     if (eax != 0x0) {
+//             esp = esp + 0x4;
+//     }
+//     var_1D = 0x757c7d51;
+//     esp = esp + 0x4;
+//     ecx = 0xffffffff;
+//     asm { repne scasb al, byte [edi] };
+//     var_24 = !ecx - 0x1;
+//     for (var_28 = 0x0; var_28 < var_24; var_28 = var_28 + 0x1) {
+//             var_1D = 0x757c7d51;
+//             *(int8_t *)(&var_1D + var_28) = var_4 ^ *(int8_t *)(&var_1D + var_28) & 0xff;
+//     }
+//     if (sign_extend_32((COND_BYTE_SET(G)) - (COND ? 0x1 : 0x0)) == 0x0) {
+//             eax = system("/bin/sh");
+//     }
+//     else {
+//             eax = puts("\nInvalid Password");
+//     }
+//     esi = *0x14 ^ *0x14;
+//     if (esi != 0x0) {
+//             eax = __stack_chk_fail();
+//     }
+//     return eax;
+// }
+
+
+// int test(int arg0, int arg1) {
+//     var_C = arg1 - arg0;
+//     if (var_C > 0x15) goto loc_804884a;
+
+// loc_8048766:
+//     goto *0x80489f0[*((var_C << 0x2) + 0x80489f0)];
+
+// loc_804884a:
+//     eax = rand();
+//     eax = decrypt(eax);
+//     return eax;
+
+// loc_8048775:
+//     eax = decrypt(var_C);
+//     return eax;
+
+// loc_8048785:
+//     eax = decrypt(var_C);
+//     return eax;
+
+// loc_8048795:
+//     eax = decrypt(var_C);
+//     return eax;
+
+// loc_80487a5:
+//     eax = decrypt(var_C);
+//     return eax;
+
+// loc_80487b5:
+//     eax = decrypt(var_C);
+//     return eax;
+
+// loc_80487c5:
+//     eax = decrypt(var_C);
+//     return eax;
+
+// loc_80487d5:
+//     eax = decrypt(var_C);
+//     return eax;
+
+// loc_80487e2:
+//     eax = decrypt(var_C);
+//     return eax;
+
+// loc_80487ef:
+//     eax = decrypt(var_C);
+//     return eax;
+
+// loc_80487fc:
+//     eax = decrypt(var_C);
+//     return eax;
+
+// loc_8048809:
+//     eax = decrypt(var_C);
+//     return eax;
+
+// loc_8048816:
+//     eax = decrypt(var_C);
+//     return eax;
+
+// loc_8048823:
+//     eax = decrypt(var_C);
+//     return eax;
+
+// loc_8048830:
+//     eax = decrypt(var_C);
+//     return eax;
+
+// loc_804883d:
+//     eax = decrypt(var_C);
+//     return eax;
+// }
+
+// int main() {
+//     esp = (esp & 0xfffffff0) - 0x24;
+//     if (eax != 0x0) {
+//             esp = esp + 0x4;
+//     }
+//     srand(time(0x0));
+//     puts("***********************************");
+//     puts("*\t\tlevel03\t\t**");
+//     puts("***********************************");
+//     printf("Password:");
+//     __isoc99_scanf(0x8048a85);
+//     test(saved_fp, 0x1337d00d);
+//     return 0x0;
+// }
