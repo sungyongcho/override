@@ -47,7 +47,7 @@ gdb-peda$ info functions system
 
 So `0xf7e6aed0` is the address for `system`.
 
-Now we need to figure out how to get the string `"/bin/sh"` from somewhere. Unfortunately, it seems as if we can't use the buffer itself to store the string as it's overwritten during the call to `system`. XXXXXXXXXX because when the process is forked, although it will copy the whole process, [rather](https://stackoverflow.com/questions/51764013/fork-and-virtual-address-spaces#:~:text=What%20fork()%20does%20is,but%20not%20everything%20is%20copied.) XXXXXXXXXXXXX Instead, let's look and see if we can [find the string](https://stackoverflow.com/a/46226054) in the `libc`.
+Now we need to figure out how to get the string `"/bin/sh"` from somewhere. Unfortunately, it seems as if we can't use the buffer itself to store the string as it's overwritten during the call to `system`. Instead, let's look and see if we can [find the string](https://stackoverflow.com/a/46226054) in the `libc`.
 
 ```
 gdb-peda$ info proc map
