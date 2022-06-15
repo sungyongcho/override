@@ -19,7 +19,6 @@ RELRO           STACK CANARY      NX            PIE             RPATH      RUNPA
 No RELRO        No canary found   NX disabled   No PIE          No RPATH   No RUNPATH   /home/users/level05/level05
 level05@OverRide:~$ ls
 level05
-level05@OverRide:~$
 ```
 
 Okay, let's run the program
@@ -39,7 +38,7 @@ level05@OverRide:~$
 ```
 
 So by looking at the execution result of the program, two things can be observed,
-- the uppercase alphabets will be turn into lower cases alphabets,
+- the uppercase alphabets will be turned into lower cases alphabets
 - if the length of input exceeds, the output will only print 99 characters
 
 By looking at the decompiled source (or with the gdb), the function uses the `printf`, so there is a chance for using format string attack.
@@ -72,4 +71,3 @@ Non-debugging symbols:
 ```
 
 In above, the call for `exit()` is used, and we can overrite the exit() in the GOT(Global Offset Table) section.
-
