@@ -1,8 +1,52 @@
+# General introduction
+
+Welcome to our Override walkthrough! xxx finish editing
+
+## The team
+
+While I am correcting this project on my own at 42 Paris, I did this project's exercises with [Sungyong (@sucho)](https://profile.intra.42.fr/users/sucho), and this GitHub repo has been a collaboration between both of us.
+
+## Setup
+
+### The .iso
+
+We set up a VirtualBox with the `.iso` and created a port forwarding rule to forward port `4444` to `4242` to make it easier to work with the virtual machine.
+
+### PEDA
+
+In this project, we used PEDA to help understand and exploit binary files. PEDA stands for Python Exploit Development Assistance for GDB, and more information can be found [here](https://github.com/longld/peda).
+
+Setup instructions:
+```
+git clone https://github.com/longld/peda.git
+
+# password: level0
+scp -P 4444 -r peda/ level0@localhost:/tmp/
+
+# NOTE: this will come in handy in future levels!
+chmod +rwx /tmp/peda/; chmod +rwx ~; echo "source /tmp/peda/peda.py" > ~/.gdbinit
+```
+
+## General process
+
+In solving Rainfall's puzzles (including level 0), we generally relied on the following process to make progress:
+
+1. Try running the binary with various arguments and note the results
+2. Use GDB to disassemble the functions we found with `info functions` in GDB.
+3. Manually reverse-engineer the assembly into something similar in C (and in some cases resorting to [Hopper](https://www.hopperapp.com/))
+4. Research any vulnerable functions found in the disassembly/reverse-engineering (`printf`, `strcpy`, etc.)
+5. Use GDB and PEDA while the program is running to trace functionality view stack/memory addresses.
+6. Exploit any vulnerabilities found
+7. Document our findings and successes (not so much our failures, of which there were many)
+
+## Caveats
+
+Any reverse-engineered C code in this project is not necessarily complete and has not been tested. It serves only to better understand the respective binary's functionality.
+
+It's also possible that the exact commands in this walkthrough will not work if the setup of the computer is slightly different. That said, following this walkthrough and re-calculating the addresses/commands will work.
+
+
 # Level 00
-
-## Introduction
-
-XXX: Teo to write a bit of an intro similar to rainfall
 
 ## Exploit
 
