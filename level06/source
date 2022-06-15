@@ -1,0 +1,55 @@
+int auth(char *username, unsigned int serial_number) {
+    int username_length;
+    unsigned int hash;
+
+    username[strcspn(username, "\n")] = '\0';
+    username_length = strnlen(username, 0x20);
+
+    if (username_length < 6) {
+      return 1;
+    }
+
+    if (ptrace(0x0) != 0xffffffff) {
+      puts(0x8048a68);
+      puts(0x8048a8c);
+      puts(0x8048ab0);
+      return 1;
+    }
+
+    hash = (sign_extend_32(*(username[3]) & 0xff) ^ 0x1337) + 0x5eeded;
+
+    for (int i = 0; i < len; i++) {
+      if (username[i] < 0x1f) { // non-printing characters
+        return 1;
+      }
+      hash += (username[i] ^ hash) % 0x539 aka 1337;
+    }
+
+    return (serial_number != hash)
+
+}
+
+int main() {
+    unsigned int serial_number;
+    char username[32];
+
+    puts("***********************************");
+    puts("*\t\tlevel06\t\t  *");
+    puts("***********************************");
+    printf("-> Enter Login: ");
+    fgets(&username, 32, 1);
+
+    puts("***********************************");
+    puts("***** NEW ACCOUNT DETECTED ********");
+    puts("***********************************");
+
+    printf("-> Enter Serial: ");
+    scanf("%u", &serial_number);
+
+    if (!auth(&username, serial_number)) {
+        puts("Authenticated!");
+        system("/bin/sh");
+        return 0;
+    }
+    return 1;
+}
