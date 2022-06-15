@@ -114,7 +114,7 @@ level05@OverRide:~$ /tmp/getenv PAYLOAD
 0xffffdefd
 ```
 
-We now have address we want(=`exit`) to overwrite: `0x080497e0`, with the address of the stack `0xffffdefd`
+We now have address we want(=`exit()`) to overwrite: `0x080497e0`, with the address of the stack `0xffffdefd`
 
 Because the address too big, we overwrite the target 2 bytes each time. (the first 4 bytes of address can be ignored)
 
