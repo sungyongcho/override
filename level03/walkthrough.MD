@@ -19,11 +19,9 @@ RELRO           STACK CANARY      NX            PIE             RPATH      RUNPA
 Partial RELRO   Canary found      NX enabled    No PIE          No RPATH   No RUNPATH   /home/users/level03/level03
 level03@OverRide:~$ ls
 level03
-level03@OverRide:~$
-
 ```
 
-let's run the program
+Let's run the program.
 
 ```
 level03@OverRide:~$ ./level03
@@ -31,9 +29,12 @@ level03@OverRide:~$ ./level03
 *		level03		**
 ***********************************
 Password:aaaaaaaaaaaaaaaaaaaa
+
+Invalid Password
+level03@OverRide:~$
 ```
 
-so the program basically asks for the password, and prints nothing. By using the assembler, there are functions declared below, and now global variables found.
+The program basically asks for the password, and prints nothing. By using GDB, we can find that there are functions declared below, as well as global variables.
 
 ```
 gdb-peda$ info function
@@ -70,7 +71,7 @@ Non-debugging symbols:
 
 ```
 
-by taking a look at the source, the program mainly takes input, and compare the input value with `0x1337d00d`, on the test function.
+By taking a look at the source, the program takes input and compares the input value with `0x1337d00d` in the test function.
 
 ```
 gdb-peda$ disass main
@@ -112,7 +113,7 @@ Dump of assembler code for function main:
 End of assembler dump.
 ```
 
-Now we see the function `test`, there are bunch of repetitive instructions are shown. By decompiling with either `Hopper` or `ghidra`, it is easy to distinguish the `test` function is consist of `switch/case` notation. Within the `switch/case` statement, the comparisons will call the function `decrypt`, but it is hard to find which values are the cases.
+Now we see the function `test`, there are bunch of repetitive instructions are shown. By decompiling with either `Hopper` or `ghidra`, it is easy to distinguish the `test` function consists of `switch/case` notation, which we can replace with an `if` statement. Within this new `if` statement, the comparisons will call the function `decrypt`.
 
 ```
 gdb-peda$ disass test
@@ -203,9 +204,9 @@ End of assembler dump.
 
 ```
 
-From the decompiled code, we see the the first parameter: an input from the user, will be subtracted by the `0x1337d00d`, then the cases are fall into `0x0 to 0x9` and `0x10 to 0x15`. In order to make the value falls into the `switch/case` statement, the user input must be bigger than `0x1337d00d`, which converts to `322424845` in decimal.
+From the decompiled code, we see the the first parameter: an input from the user, will be subtracted by the `0x1337d00d`, then the cases are fall between `0x0` and `0x15`. In order to make the value return true in the `if` statement, the user input must be just a tiny bit bigger than `0x1337d00d`, which converts to `322424845` in decimal.
 
-Now, just without taking a look at the function `decrypt for now`, how about we just provide all the cases into the program?
+Now, without taking a look at the function `decrypt`, how about we just provide all the possible cases into the program? (There's only 16, so this should go quickly.)
 
 
 ```
@@ -342,7 +343,7 @@ Password:322424827
 $
 ```
 
-Oops,
+And voila we have our answer!
 
 ```
 $ whoami
