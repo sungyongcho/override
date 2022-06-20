@@ -153,7 +153,7 @@ int main()
 	}
 
 	puts("Enter Password: ");
-	fgets(buf, 0x64, stdin);
+	fgets(buf, 0x64 aka 100, stdin);
 
 	a = verify_user_pass(buf);
 	if (a == 0)
