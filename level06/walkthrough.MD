@@ -4,7 +4,7 @@ Once logged in, you will see a binary.
 
 ```
 $ ssh level06@localhost -p 4444
-	   ____                  ____  _     __   
+	   ____                  ____  _     __
 	  / __ \_   _____  _____/ __ \(_)___/ /__
 	 / / / / | / / _ \/ ___/ /_/ / / __  / _ \
 	/ /_/ /| |/ /  __/ /  / _, _/ / /_/ /  __/
@@ -85,7 +85,7 @@ gdb-peda$ r
 ***********************************
 ***** NEW ACCOUNT DETECTED ********
 ***********************************
--> Enter Serial: 123456  
+-> Enter Serial: 123456
 
 Catchpoint 1 (returned from syscall ptrace), 0xf7fdb440 in __kernel_vsyscall ()
 
