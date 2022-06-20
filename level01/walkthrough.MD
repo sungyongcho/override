@@ -137,7 +137,6 @@ gdb-peda$ stack
 0020| 0xffffd734 --> 0xffffd71c ("6Ac7Ac8Ac9Ad0Ad1Ad2")
 0024| 0xffffd738 --> 0xffffd7bc --> 0xffffd8f5 ("TERM=xterm-256color")
 0028| 0xffffd73c --> 0x0
-
 ```
 
 The last thing we need to create the exploit input is the address where our shellcode will start. We find this by looking at where `fgets` stores the input during its second call (`0xffffd6ec`). (Note: in testing, we've found that this address can change if you run the command on different machines. If this address doesn't work, you can recalculate it with the following `ltrace` function)
@@ -167,14 +166,14 @@ puts("nope, incorrect password...\n")                           = 29
 
 Here's the steps we used to get to our final exploit.
 
-First step:
+First iteration:
 
 ```
 dat_wil    # the username that we found by disassembling verify_user_name()
 [  shellcode  ] + [  padding up to 80 chars  ] + [  address  ]
 ```
 
-Next step:
+Next iteration:
 
 ```
 dat_wil
