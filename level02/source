@@ -55,7 +55,7 @@ int main(int arg0, int arg1) {
         system("/bin/sh");
         return (0);
     } else {
-        printf(&buffer_username);
+        printf(&buffer_username);  // FSA possible here
         puts(" does not have access!");
         exit(1);
     }
