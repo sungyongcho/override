@@ -22,7 +22,7 @@ level07
 level07@OverRide:~$
 ```
 
-let's run the program
+Let's run the program.
 
 ```
 level07@OverRide:~$ ./level07
@@ -51,10 +51,10 @@ Input command: quit
 level07@OverRide:~$
 ```
 
-So now, the program seems to do the `storage service`, but it will be not efficient to do test all the inputs manually (maybe..?), so it is better to see if there is a way to exploit it.
+The program seems to be a storage service, but it will not be efficient to do test all the inputs manually, so it is better to see if there is a way to exploit it.
 
 
-By decompiling the source, it is easy to figure out The program uses `memset()`, `puts()`, `printf()`, `fgets()`, which gives a possibility to use buffer overflow attack. Functions `store_number()`, and `read_number()` are declared, that can be invesigated, as well.
+By decompiling the source we can see the program uses `memset()`, `puts()`, `printf()`, and `fgets()`, which gives us lots of options to use a buffer overflow attack. Functions `store_number()`, and `read_number()` are declared that should be investigated as well.
 
 ```
 gdb-peda$ info functions
