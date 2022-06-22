@@ -21,7 +21,7 @@ level05@OverRide:~$ ls
 level05
 ```
 
-Okay, let's run the program
+Okay, let's run the program.
 
 ```
 level05@OverRide:~$ ./level05
@@ -37,11 +37,11 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 level05@OverRide:~$
 ```
 
-So by looking at the execution result of the program, two things can be observed,
-- the uppercase alphabets will be turned into lower cases alphabets
-- if the length of input exceeds, the output will only print 99 characters
+By looking at the execution result of the program, two things can be observed,
+- the uppercase letters will be turned into lower case letters
+- if the length of input is too long, the output will only print 99 characters
 
-By looking at the decompiled source (or with the gdb), the function uses the `printf`, so there is a chance for using format string attack.
+By looking at the decompiled source (or with GDB), the function uses `printf`, so there is a chance for using format string attack.
 
 ```
 gdb-peda$ info functions
