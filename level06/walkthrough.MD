@@ -45,7 +45,7 @@ level06@OverRide:~$ ./level06
 -> Enter Serial: 7482
 ```
 
-After decompiling with Hopper and figuring out what the program does, it seems as if it takes a username and password and computes whether the password matches a hash based on the username.
+After decompiling with Hopper and figuring out what the program does: it seems as if it takes a username and password and computes whether the password matches a hash based on the username.
 
 We could rewrite the hash algorithm (not overly complicated) to calculate the "password" for any given username, but instead we'll just use GDB to do the work for us. We'll put a breakpoint right as the program is doing the comparison between the user input and the calculated hash.
 
@@ -75,7 +75,7 @@ gdb-peda$ commands 1
 >set $eax=0
 >continue
 >end
-gdb-peda$ b *auth+286                 # return (serial_number != hash)
+gdb-peda$ b *auth+286                 # in source: return (serial_number != hash)
 Breakpoint 2 at 0x8048866
 gdb-peda$ r
 ***********************************
