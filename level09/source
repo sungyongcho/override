@@ -33,20 +33,21 @@ void set_username(long param_1)
 {
   long lVar1;
   undefined8 *puVar2;
-  undefined8 local_98 [17];
-  int local_c;
+  char buffer[17];
+  int i;
 
-  puVar2 = local_98;
+  puVar2 = buffer;
   for (lVar1 = 0x10; lVar1 != 0; lVar1 = lVar1 + -1) {
     *puVar2 = 0;
     puVar2 = puVar2 + 1;
   }
   puts(">: Enter your username");
   printf(">>: ");
-  fgets((char *)local_98,0x80,stdin);
-  for (local_c = 0; (local_c < 0x29 && (*(char *)((long)local_98 + (long)local_c) != '\0'));		//1 the for loop where the comparison with 40 bytes done.
-      local_c = local_c + 1) {
-    *(undefined *)(param_1 + 0x8c + (long)local_c) = *(undefined *)((long)local_98 + (long)local_c);
+  fgets(buffer, 0x80, stdin);
+  for (i = 0;
+        (i < 0x29 && (*(char *)(buffer + i) != '\0'));		//1 the for loop where the comparison with (0x29 = 41) 40 bytes done.
+        i = i + 1) {
+    *(undefined *)(param_1 + 0x8c + i) = *(undefined *)(buffer + i);
   }
   printf(">: Welcome, %s",param_1 + 0x8c);
   return;
