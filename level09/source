@@ -23,7 +23,9 @@ void set_msg(char *param_1)
   puts(">: Msg @Unix-Dude");
   printf(">>: ");
   fgets((char *)local_408,0x400,stdin);
-  strncpy(param_1,(char *)local_408,(long)*(int *)(param_1 + 0xb4));		#here where the overwrite is happening
+  strncpy(param_1,(char *)local_408,(long)*(int *)(param_1 + 0xb4));		// 2. the overwriting for calling 'secret_backdoor' is happening, but the last parameter
+																			// which is setting the length for copying needs to be longer.
+																			// Take a look at the #3, on the 'handle_msg' function
   return;
 }
 
@@ -42,7 +44,7 @@ void set_username(long param_1)
   puts(">: Enter your username");
   printf(">>: ");
   fgets((char *)local_98,0x80,stdin);
-  for (local_c = 0; (local_c < 0x29 && (*(char *)((long)local_98 + (long)local_c) != '\0'));
+  for (local_c = 0; (local_c < 0x29 && (*(char *)((long)local_98 + (long)local_c) != '\0'));		//1 the for loop where the comparison with 40 bytes done.
       local_c = local_c + 1) {
     *(undefined *)(param_1 + 0x8c + (long)local_c) = *(undefined *)((long)local_98 + (long)local_c);
   }
@@ -52,6 +54,12 @@ void set_username(long param_1)
 
 void handle_msg(void)
 {
+// The upper block can be interpreted as a structure
+// struct {
+//		char buf_1[140];
+//		char buf_2[40];
+//		unsigned int num;
+// };
   undefined local_c8 [140];
   undefined8 local_3c;
   undefined8 local_34;
@@ -65,7 +73,7 @@ void handle_msg(void)
   local_2c = 0;
   local_24 = 0;
   local_1c = 0;
-  local_14 = 0x8c;
+  local_14 = 0x8c;								// where local_14 is set to 0x8c = 140, will be passed to the `set_msg`
   set_username(local_c8);
   set_msg(local_c8);
   puts(">: Msg sent!");
