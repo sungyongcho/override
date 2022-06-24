@@ -27,6 +27,13 @@ scp -P 4444 -r peda/ level00@localhost:/tmp/
 chmod +rwx /tmp/peda/; chmod +rwx ~; echo "source /tmp/peda/peda.py" > ~/.gdbinit
 ```
 
+### Ghidra and Hopper
+
+We used the Ghidra and Hopper to decompile the source code of various binaries in this project.
+- [Hopper app](https://www.hopperapp.com/)
+- [Ghidra website](https://ghidra-sre.org/)
+- [Ghidra download](https://github.com/NationalSecurityAgency/ghidra/releases)
+
 ## General process
 
 In solving Override's puzzles (including level 0), we generally relied on the following process to make progress:
